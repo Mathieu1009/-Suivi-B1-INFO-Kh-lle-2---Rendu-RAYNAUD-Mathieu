@@ -1,122 +1,103 @@
-import Tkinter
-from Tkinter import Frame, BOTH, Canvas
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*-
+
+from tkinter import *
+from random import randrange
+
+def jouer():
+
+	def deplacement_balle():
+
+		global dx, dy
+		canevas.move(balle, dx, dy)
+		Fenetre.after(30, deplacement_balle)
+		x0_balle,y0_balle,x1_balle,y1_balle = canevas.coords(balle)
+		x0_1,y0_1,x1_1,y1_1 = canevas.coords(raquette1)
+		x0_2,y0_2,x1_2,y1_2 = canevas.coords(raquette2)
+
+		#Test de la colision à la raquette
+		if x0_balle <= 0:
+			canevas.coords(balle,338, 238, 362, 262)
+			canevas.pack_forget()
+			menu()
+		elif x0_balle < x1_1 and y0_balle > y0_1 and y1_balle < y1_1:
+			dx = dx * -1
+		elif y0_balle < 0:
+			dy = dy * -1
+
+		if x1_balle >= 700:
+			canevas.coords(balle,338, 238, 362, 262)
+			canevas.pack_forget()
+			menu()
+		elif x1_balle > x0_2 and y0_balle > y0_2 and y1_balle < y1_2:
+			dx = dx * -1
+		elif y1_balle > 500:
+			dy = dy * -1
+
+	def deplacement_raquette(event):
+
+		x0_1,y0_1,x1_1,y1_1 = canevas.coords(raquette1)
+		x0_2,y0_2,x1_2,y1_2 = canevas.coords(raquette2)
+		touche = event.keysym
+		if touche == "Up" and y0_2 > 0:
+			y0_2=y0_2-10
+			y1_2=y1_2-10
+			canevas.coords(raquette2,x0_2,y0_2,x1_2,y1_2)
+		elif touche == "Down" and y1_2 < 500:
+			y0_2=y0_2+10
+			y1_2=y1_2+10
+			canevas.coords(raquette2,x0_2,y0_2,x1_2,y1_2)
+
+		if touche == "z" and y0_1 > 0:
+			y0_1=y0_1-10
+			y1_1=y1_1-10
+			canevas.coords(raquette1,x0_1,y0_1,x1_1,y1_1)
+		elif touche == "s" and y1_1 < 500:
+			y0_1=y0_1+10
+			y1_1=y1_1+10
+			canevas.coords(raquette1,x0_1,y0_1,x1_1,y1_1)
+
+	#Fenetre graphique
+	Fenetre.title("Jeu du Pong")
+	canevas = Canvas(Fenetre,width=700,height=500,bg='#000000',cursor="none")
+
+	#Initialisation du terrain
+	canevas.create_line(350, 0, 350, 500, fill='white')
+	Bord1 = canevas.create_rectangle(0, 3, 4, 497, fill='white')
+	Bord2 = canevas.create_rectangle(696, 3, 700, 497, fill='white')
+	Bord3 = canevas.create_rectangle(0, 0, 700, 4, fill='white')
+	Bord4 = canevas.create_rectangle(0, 496, 700, 500, fill='white')
+
+	#Initialisation des Modules
+	balle = canevas.create_oval((338, 238, 362, 262),fill='white')
+	raquette1 = canevas.create_rectangle(20,200,30,300,fill='white')
+	raquette2 = canevas.create_rectangle(670,200,680,300,fill='white')
 
 
-#By Caleb Robinson
-class Pong(Frame):
-    player1 = 0
-    player2 = 0
-    ballX=50
-    ballY=50
-    ball = 0
-    paddle1 = 0
-    paddle2 = 0
-    paddle1X = 2
-    paddle1Y = 2
-    paddle2X = 0
-    paddle2Y = 2
-    canvas = 0
-    ballDX = 2
-    ballDY = -2
-    winHEIGHT = 0;
-    winWIDTH = 0;
-    paddleSpeed = 15
-    player1Points = 0
-    player2Points = 0
-    textLabel = 0
-    
-    def __init__(self, parent):
-        Frame.__init__(self, parent)   
-        self.parent = parent        
-        self.initUI()
+	canevas.focus_set()
+	canevas.bind("<Key>", deplacement_raquette)
+	canevas.pack()
 
-    def key(self, event):
-        global player1,player2
-        print "pressed", repr(event.char)
-        if event.char == 'w':
-            if self.canvas.coords(self.paddle1)[1]>=0:
-                self.canvas.move(self.paddle1,0,-self.paddleSpeed)
-        if event.char == 's':
-            if self.canvas.coords(self.paddle1)[3]<=self.winHEIGHT:
-                self.canvas.move(self.paddle1,0,self.paddleSpeed)
-        if event.char == 'o':
-            if self.canvas.coords(self.paddle2)[1]>=0:
-                self.canvas.move(self.paddle2,0,-self.paddleSpeed)
-        if event.char == 'l':
-            if self.canvas.coords(self.paddle2)[3]<=self.winHEIGHT:
-                self.canvas.move(self.paddle2,0,self.paddleSpeed)
-        if event.char == 'q':
-            self.parent.destroy()
+	deplacement_balle()
 
-    def callback(self, event):
-        self.focus_set()
-        print "clicked at", event.x, event.y
+	Fenetre.mainloop()
+	Fenetre.destroy()
 
-    def motion(self, event):
-        coords1 = self.canvas.coords(self.paddle1)
-        height1 = coords1[3]-coords1[1]
-        coords1[1] = event.y
-        coords1[3] = event.y+height1
-        self.canvas.coords(self.paddle1,coords1[0],coords1[1],coords1[2],coords1[3])
-        
-    def initUI(self):
+def menu():
 
-        self.paddle2X = self.parent.winfo_screenwidth() - 15
-        self.parent.title("Pong")        
-        self.pack(fill=BOTH, expand=1)
-        self.canvas = Canvas(self)
-        self.canvas.pack(fill=BOTH, expand=1)
-        self.winHEIGHT = self.parent.winfo_screenheight()
-        self.winWIDTH = self.parent.winfo_screenwidth()
-        self.ball = self.canvas.create_oval(0+self.ballX, 0+self.ballY, 10+self.ballX, 10+self.ballY, outline="black", 
-            fill="red", width=1)
-        self.paddle1 = self.canvas.create_rectangle(0+self.paddle1X, 0+self.paddle1Y, 10+self.paddle1X, 50+self.paddle1Y, outline="#fb0", fill="#fb0")
-        self.paddle2 = self.canvas.create_rectangle(0+self.paddle2X, 0+self.paddle2Y, 10+self.paddle2X, 50++self.paddle2Y, outline="#fb0", fill="#fb0")
-        self.textLabel = self.canvas.create_text(self.winWIDTH/2,10, text=str(self.player1Points)+" | "+str(self.player2Points))
-        self.parent.bind("<Key>", self.key)
-        self.parent.bind("<Button-1>", self.callback)
-        self.parent.bind("<Motion>", self.motion)
-        self.canvas.pack(fill=BOTH, expand=1)
-        self.after(200, self.doMove)
-        
+	#Initialisation du menu et des boutons
+	Fenetre.title('Menu')
+	Debut = Button(Fenetre, text='Débuter', command=lambda:[Debut.grid_forget(),Quitter.grid_forget(),jouer()])
+	Debut.grid(row=1, column=1)
+	Quitter = Button(Fenetre, text='Quitter', command=Fenetre.destroy)
+	Quitter.grid(row=1, column=2)
 
-    def doCollide(self,coords1,coords2):
-        height1 = coords1[3]-coords1[1]
-        width1 = coords1[2]-coords1[0]
-        height2 = coords2[3]-coords2[1]
-        width2 = coords2[2]-coords2[0]
-        return not (coords1[0] + width1 < coords2[0] or coords1[1] + height1 < coords2[1] or coords1[0] > coords2[0] + width2 or coords1[1] > coords2[1] + height2)
+	Fenetre.mainloop()
+	Fenetre.destroy()
 
-    def doMove(self):
-        self.canvas.move(self.ball,self.ballDX, self.ballDY)
-        if self.canvas.coords(self.ball)[1] <= 0:
-            self.ballDY = -self.ballDY
-        if self.canvas.coords(self.ball)[3] >= self.winHEIGHT:
-            self.ballDY = -self.ballDY
-        if self.doCollide(self.canvas.coords(self.ball),self.canvas.coords(self.paddle1)) or self.doCollide(self.canvas.coords(self.ball),self.canvas.coords(self.paddle2)):
-            self.ballDX = -self.ballDX
-        if self.canvas.coords(self.ball)[0] <= 0:
-            self.ballDX = -self.ballDX
-            self.player2Points+=1
-            self.canvas.delete(self.textLabel)
-            self.textLabel = self.canvas.create_text(self.winWIDTH/2,10, text=str(self.player1Points)+" | "+str(self.player2Points))
-            self.canvas.coords(self.ball,self.winWIDTH/2,self.winHEIGHT/2,self.winWIDTH/2+10,self.winHEIGHT/2+10)
-        if self.canvas.coords(self.ball)[2] >= self.winWIDTH:
-            self.ballDX = -self.ballDX
-            self.player1Points+=1
-            self.canvas.delete(self.textLabel)
-            self.textLabel = self.canvas.create_text(self.winWIDTH/2,10, text=str(self.player1Points)+" | "+str(self.player2Points))
-            self.canvas.coords(self.ball,self.winWIDTH/2,self.winHEIGHT/2,self.winWIDTH/2+10,self.winHEIGHT/2+10)
-        self.after(10, self.doMove)
+Fenetre = Tk()
+#Direction de la Balle aléatoire
+dx = randrange(-8, 8)
+dy = randrange(-8, 8)
 
-def main():
-  
-    root = Tkinter.Tk()
-    ex = Pong(root)
-    root.overrideredirect(True)
-    root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenheight()))
-    root.mainloop()  
-
-
-if __name__ == '__main__':
-    main() 
+menu()
